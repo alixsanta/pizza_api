@@ -93,11 +93,55 @@ def get_pizza(pizza_id):
 
 @app.route('/pizzas', methods=['GET'])
 def get_all_pizzas():
-    """Récupère toutes les pizzas"""
-    pizzas_db = PizzaDB.query.all()
+    """Récupère le catalogue de pizzas"""
+    # Récupérer seulement les pizzas du catalogue (sans commandes associées)
+    catalog_type = request.args.get('type', 'catalog')
+
+    if catalog_type == 'catalog':
+        # Pizzas du catalogue uniquement
+        pizzas_db = PizzaDB.query.outerjoin(PizzaDB.orders).filter(
+            PizzaDB.orders == None
+        ).all()
+    else:
+        # Toutes les pizzas
+        pizzas_db = PizzaDB.query.all()
+
     pizzas_list = [pizza.to_dict() for pizza in pizzas_db]
 
     return jsonify({"pizzas": pizzas_list, "count": len(pizzas_list)}), 200
+
+
+@app.route('/pizzas/catalog', methods=['GET'])
+def get_pizza_catalog():
+    """Récupère le catalogue de pizzas groupé par nom avec toutes les tailles"""
+    # Récupérer toutes les pizzas du catalogue
+    pizzas_db = PizzaDB.query.outerjoin(PizzaDB.orders).filter(
+        PizzaDB.orders == None
+    ).order_by(PizzaDB.name, PizzaDB.size).all()
+
+    # Grouper par nom de pizza
+    catalog = {}
+    for pizza in pizzas_db:
+        pizza_dict = pizza.to_dict()
+        name = pizza_dict['name']
+
+        if name not in catalog:
+            catalog[name] = {
+                'name': name,
+                'toppings': pizza_dict['toppings'],
+                'sizes': []
+            }
+
+        catalog[name]['sizes'].append({
+            'id': pizza_dict['pizza_id'],
+            'size': pizza_dict['size'],
+            'price': pizza_dict['price'],
+            'currency': pizza_dict['currency']
+        })
+
+    catalog_list = list(catalog.values())
+
+    return jsonify({"catalog": catalog_list, "count": len(catalog_list)}), 200
 
 
 # ==================== ORDER ENDPOINTS ====================
@@ -155,7 +199,7 @@ def get_all_orders():
 
 @app.route('/orders/<order_id>/pizzas', methods=['POST'])
 def add_pizza_to_order(order_id):
-    """Ajoute une pizza à une commande"""
+    """Ajoute une pizza à une commande (référence une pizza du catalogue)"""
     order_db = OrderDB.query.get(order_id)
 
     if not order_db:
@@ -167,37 +211,23 @@ def add_pizza_to_order(order_id):
         if not data:
             return jsonify({"error": "No data provided"}), 400
         
-        # Option 1: Créer une nouvelle pizza directement
-        if 'name' in data and 'size' in data and 'price' in data:
-            pizza = Pizza(
-                name=data['name'],
-                size=data['size'],
-                price=data['price'],
-                toppings=data.get('toppings', [])
-            )
-            pizza_db = PizzaDB.from_pizza_object(pizza)
-            db.session.add(pizza_db)
-            db.session.flush()  # Pour obtenir l'ID
+        # UNIQUEMENT par pizza_id du catalogue
+        if 'pizza_id' not in data:
+            return jsonify({"error": "pizza_id is required"}), 400
 
-        # Option 2: Utiliser une pizza existante par son ID
-        elif 'pizza_id' in data:
-            pizza_id = data['pizza_id']
-            pizza_db = PizzaDB.query.get(pizza_id)
-            if not pizza_db:
-                return jsonify({"error": "Pizza not found"}), 404
-        else:
-            return jsonify({"error": "Invalid pizza data"}), 400
-        
-        # Créer la liaison
+        pizza_id = data['pizza_id']
+        pizza_db = PizzaDB.query.get(pizza_id)
+
+        if not pizza_db:
+            return jsonify({"error": "Pizza not found in catalog"}), 404
+
+        # Créer la liaison order <-> pizza
         order_pizza = OrderPizzaDB(order_id=order_id, pizza_id=pizza_db.id)
         db.session.add(order_pizza)
         db.session.commit()
 
         return jsonify(order_db.to_dict()), 200
 
-    except ValueError as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Internal server error"}), 500

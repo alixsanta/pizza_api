@@ -15,7 +15,6 @@
 - 💰 **Support multi-devises** - EUR, USD, GBP, CAD
 - 🎨 **Interface web moderne** - Design avec animations fluides
 - 🧪 **Tests complets** - 65 tests (unitaires + E2E)
-- 📚 **Documentation API** - Endpoints documentés avec exemples
 
 ---
 
@@ -33,6 +32,9 @@ venv\Scripts\activate
 # 3. Installer les dépendances
 pip install -r requirements.txt
 ```
+
+# 4. Initialiser le catalogue de pizzas
+python seed_pizzas.py
 
 ### Lancer l'Application
 
@@ -96,14 +98,15 @@ Réponse attendue:
 ---
 
 ## 📡 API Endpoints (17 endpoints)
-
+## 📡 API Endpoints (19 endpoints)
 ### 🍕 Pizzas
-
+### 🍕 Pizzas
 | Méthode | Endpoint | Description | Statut |
 |---------|----------|-------------|--------|
 | `POST` | `/pizzas` | Créer une pizza | ✅ |
-| `GET` | `/pizzas` | Lister toutes les pizzas | ✅ |
+| `POST` | `/pizzas` | Créer une pizza (admin) | ✅ |
 | `GET` | `/pizzas/<id>` | Récupérer une pizza | ✅ |
+| `GET` | `/pizzas/catalog` | Récupérer le catalogue (groupé par nom) | ✅ NEW |
 
 ### 📦 Commandes
 
@@ -113,7 +116,7 @@ Réponse attendue:
 | `GET` | `/orders` | Lister les commandes | ✅ |
 | `GET` | `/orders/<id>` | Récupérer une commande | ✅ |
 | `POST` | `/orders/<id>/pizzas` | Ajouter une pizza | ✅ |
-| `DELETE` | `/orders/<id>/pizzas/<index>` | Retirer une pizza | ✅ |
+| `POST` | `/orders/<id>/pizzas` | Ajouter une pizza (par pizza_id) | ✅ MODIFIED |
 | `PATCH` | `/orders/<id>/status` | Changer le statut | ✅ |
 
 ### 🚗 Livraisons
@@ -175,7 +178,7 @@ pytest tests/test_e2e.py -v
 pizza_api/
 ├── app/
 │   ├── __init__.py
-│   ├── app.py                 # Application Flask (17 endpoints)
+│   ├── app.py                 # Application Flask (19 endpoints)
 │   ├── database.py            # Configuration SQLAlchemy
 │   └── models/
 │       ├── __init__.py
@@ -187,7 +190,7 @@ pizza_api/
 │
 ├── static/
 │   ├── css/
-│   │   └── style.css          # Styles de l'interface web
+│   │   └── style.css          # Styles UI moderne
 │   └── js/
 │       └── app.js             # Logique JavaScript
 │
@@ -206,8 +209,6 @@ pizza_api/
 ├── requirements.txt           # Dépendances Python
 ├── README.md                  # Ce fichier
 ├── API_DOCUMENTATION.md       # Documentation API détaillée
-├── CONTRIBUTING.md            # Guide de contribution
-├── AUDIT_REPORT.md            # Rapport d'audit complet
 └── pizza_delivery.db          # Base de données SQLite
 ```
 

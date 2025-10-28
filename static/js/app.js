@@ -10,52 +10,7 @@ let customerInfo = {
 };
 let cart = [];
 let currentOrderId = null;
-
-// Pizza Menu
-const pizzaMenu = [
-    {
-        name: 'Margherita',
-        icon: '🍕',
-        size: 'Medium',
-        price: 9.99,
-        toppings: ['Tomate', 'Mozzarella', 'Basilic']
-    },
-    {
-        name: 'Pepperoni',
-        icon: '🍕',
-        size: 'Medium',
-        price: 11.99,
-        toppings: ['Tomate', 'Mozzarella', 'Pepperoni']
-    },
-    {
-        name: 'Végétarienne',
-        icon: '🥗',
-        size: 'Medium',
-        price: 10.99,
-        toppings: ['Tomate', 'Mozzarella', 'Légumes frais']
-    },
-    {
-        name: 'Quatre Fromages',
-        icon: '🧀',
-        size: 'Medium',
-        price: 12.99,
-        toppings: ['Mozzarella', 'Gorgonzola', 'Parmesan', 'Chèvre']
-    },
-    {
-        name: 'Calzone',
-        icon: '🥟',
-        size: 'Large',
-        price: 13.99,
-        toppings: ['Tomate', 'Mozzarella', 'Jambon', 'Champignons']
-    },
-    {
-        name: 'Hawaïenne',
-        icon: '🍍',
-        size: 'Medium',
-        price: 11.49,
-        toppings: ['Tomate', 'Mozzarella', 'Jambon', 'Ananas']
-    }
-];
+let pizzaCatalog = []; // Catalogue chargé depuis l'API
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', function() {
@@ -86,52 +41,133 @@ document.addEventListener('DOMContentLoaded', function() {
         backBtn.addEventListener('click', () => goToStep(1));
     }
 
-    // Display Menu
-    displayPizzaMenu();
+    // Load catalog and display menu
+    loadPizzaCatalog();
 
     // Initialize cart
     updateCart();
 });
 
 /**
- * Display Pizza Menu
+ * Load Pizza Catalog from API
+ */
+async function loadPizzaCatalog() {
+    try {
+        const response = await fetch('/pizzas/catalog');
+        const data = await response.json();
+        pizzaCatalog = data.catalog;
+        console.log('📋 Catalogue chargé:', pizzaCatalog.length, 'types de pizzas');
+        displayPizzaMenu();
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement du catalogue:', error);
+        showToast('Erreur lors du chargement du menu', 'error');
+    }
+}
+
+/**
+ * Display Pizza Menu with Size Selection
  */
 function displayPizzaMenu() {
     const menuContainer = document.getElementById('pizzaMenu');
     if (!menuContainer) return;
 
+    if (pizzaCatalog.length === 0) {
+        menuContainer.innerHTML = '<p style="text-align: center; padding: 40px;">Chargement du menu...</p>';
+        return;
+    }
+
     menuContainer.innerHTML = '';
 
-    pizzaMenu.forEach((pizza, index) => {
+    // Icônes par type de pizza
+    const icons = {
+        'Margherita': '🍕',
+        'Pepperoni': '🍕',
+        'Végétarienne': '🥗',
+        'Quatre Fromages': '🧀',
+        'Calzone': '🥟',
+        'Hawaïenne': '🍍',
+        'Reine': '👑',
+        'Savoyarde': '🏔️'
+    };
+
+    pizzaCatalog.forEach((pizza, index) => {
+        const icon = icons[pizza.name] || '🍕';
         const pizzaCard = document.createElement('div');
         pizzaCard.className = 'pizza-card';
+        pizzaCard.setAttribute('data-pizza-index', index);
+
+        // Générer les options de taille
+        const sizeOptions = pizza.sizes.map((size, sizeIndex) => `
+            <label class="size-option ${sizeIndex === 1 ? 'selected' : ''}" data-size-index="${sizeIndex}">
+                <input type="radio" name="size-${index}" value="${size.id}" ${sizeIndex === 1 ? 'checked' : ''}>
+                <span class="size-label">${size.size}</span>
+                <span class="size-price">${size.price.toFixed(2)} €</span>
+            </label>
+        `).join('');
+
         pizzaCard.innerHTML = `
             <div class="pizza-image">
-                ${pizza.icon}
+                ${icon}
             </div>
             <div class="pizza-card-content">
                 <h3 class="pizza-name">${pizza.name}</h3>
                 <p class="pizza-toppings">${pizza.toppings.join(' • ')}</p>
-                <div class="pizza-footer">
-                    <span class="pizza-price">${pizza.price.toFixed(2)} €</span>
-                    <button class="btn-add-cart" onclick="addToCart(${index})">
-                        Ajouter
-                    </button>
+                
+                <div class="size-selector">
+                    ${sizeOptions}
                 </div>
+                
+                <button class="btn-add-cart" onclick="addToCartFromCatalog(${index})">
+                    Ajouter
+                </button>
             </div>
         `;
+
         menuContainer.appendChild(pizzaCard);
+
+        // Gérer le changement de taille
+        const sizeLabels = pizzaCard.querySelectorAll('.size-option');
+        sizeLabels.forEach(label => {
+            label.addEventListener('click', function() {
+                sizeLabels.forEach(l => l.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
     });
 }
 
 /**
- * Add Pizza to Cart
+ * Add Pizza to Cart from Catalog (with selected size)
  */
-function addToCart(pizzaIndex) {
-    const pizza = pizzaMenu[pizzaIndex];
-    cart.push({...pizza});
+function addToCartFromCatalog(pizzaIndex) {
+    const pizza = pizzaCatalog[pizzaIndex];
+    const pizzaCard = document.querySelector(`[data-pizza-index="${pizzaIndex}"]`);
+    const selectedSizeInput = pizzaCard.querySelector('input[type="radio"]:checked');
+
+    if (!selectedSizeInput) {
+        showToast('Veuillez sélectionner une taille', 'error');
+        return;
+    }
+
+    const selectedSizeId = selectedSizeInput.value;
+    const selectedSize = pizza.sizes.find(s => s.id === selectedSizeId);
+
+    if (!selectedSize) {
+        showToast('Erreur: taille non trouvée', 'error');
+        return;
+    }
+
+    // Ajouter au panier avec l'ID de la pizza du catalogue
+    cart.push({
+        pizza_id: selectedSize.id,  // ID de la pizza en BDD
+        name: pizza.name,
+        size: selectedSize.size,
+        price: selectedSize.price,
+        toppings: pizza.toppings
+    });
+
     updateCart();
-    showToast('Pizza ajoutée au panier !', 'success');
+    showToast(`${pizza.name} (${selectedSize.size}) ajoutée ! 🎉`, 'success');
 }
 
 /**
@@ -265,20 +301,21 @@ async function handlePlaceOrder() {
         const order = await orderResponse.json();
         currentOrderId = order.order_id;
 
-        // 2. Add Pizzas to Order
+        // 2. Add Pizzas to Order (using pizza_id from catalog)
         for (const pizza of cart) {
-            await fetch(`/orders/${currentOrderId}/pizzas`, {
+            const addPizzaResponse = await fetch(`/orders/${currentOrderId}/pizzas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: pizza.name,
-                    size: pizza.size,
-                    price: pizza.price,
-                    toppings: pizza.toppings
+                    pizza_id: pizza.pizza_id  // ID de la pizza du catalogue
                 })
             });
+
+            if (!addPizzaResponse.ok) {
+                throw new Error('Erreur lors de l\'ajout d\'une pizza');
+            }
         }
 
         // 3. Update Order Status

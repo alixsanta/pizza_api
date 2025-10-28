@@ -148,7 +148,19 @@ class TestOrderEndpoints:
         assert data['customer_name'] == "Jane Smith"
     
     def test_add_pizza_to_order(self, client):
-        """Test l'ajout d'une pizza à une commande"""
+        """Test l'ajout d'une pizza à une commande (avec pizza_id du catalogue)"""
+        # Créer une pizza dans le catalogue d'abord
+        catalog_pizza_data = {
+            "name": "Margherita",
+            "size": "Medium",
+            "price": 12.99,
+            "toppings": ["tomato", "mozzarella", "basil"]
+        }
+        pizza_response = client.post('/pizzas',
+                                     data=json.dumps(catalog_pizza_data),
+                                     content_type='application/json')
+        pizza_id = json.loads(pizza_response.data)['pizza_id']
+
         # Créer une commande
         order_data = {
             "customer_name": "Bob Johnson",
@@ -159,14 +171,10 @@ class TestOrderEndpoints:
                                      content_type='application/json')
         order_id = json.loads(order_response.data)['order_id']
         
-        # Ajouter une pizza
-        pizza_data = {
-            "name": "Margherita",
-            "size": "Medium",
-            "price": 12.99
-        }
+        # Ajouter la pizza via son ID
+        pizza_ref_data = {"pizza_id": pizza_id}
         response = client.post(f'/orders/{order_id}/pizzas',
-                              data=json.dumps(pizza_data),
+                              data=json.dumps(pizza_ref_data),
                               content_type='application/json')
         
         assert response.status_code == 200
@@ -176,6 +184,17 @@ class TestOrderEndpoints:
     
     def test_update_order_status(self, client):
         """Test la mise à jour du statut d'une commande"""
+        # Créer une pizza dans le catalogue
+        catalog_pizza_data = {
+            "name": "Margherita",
+            "size": "Medium",
+            "price": 12.99
+        }
+        pizza_response = client.post('/pizzas',
+                                     data=json.dumps(catalog_pizza_data),
+                                     content_type='application/json')
+        pizza_id = json.loads(pizza_response.data)['pizza_id']
+
         # Créer une commande
         order_data = {
             "customer_name": "Alice Brown",
@@ -186,14 +205,10 @@ class TestOrderEndpoints:
                                      content_type='application/json')
         order_id = json.loads(order_response.data)['order_id']
         
-        # Ajouter une pizza d'abord (requis pour passer en "preparing")
-        pizza_data = {
-            "name": "Margherita",
-            "size": "Medium",
-            "price": 12.99
-        }
+        # Ajouter une pizza (requis pour passer en "preparing")
+        pizza_ref_data = {"pizza_id": pizza_id}
         client.post(f'/orders/{order_id}/pizzas',
-                   data=json.dumps(pizza_data),
+                   data=json.dumps(pizza_ref_data),
                    content_type='application/json')
 
         # Mettre à jour le statut
