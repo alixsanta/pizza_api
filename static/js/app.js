@@ -1,8 +1,8 @@
 /**
- * Application JavaScript pour la commande de pizzas
+ * Pizza Express - Modern JavaScript Application
  */
 
-// État de l'application
+// Application State
 let currentStep = 1;
 let customerInfo = {
     name: '',
@@ -11,7 +11,7 @@ let customerInfo = {
 let cart = [];
 let currentOrderId = null;
 
-// Menu de pizzas disponibles
+// Pizza Menu
 const pizzaMenu = [
     {
         name: 'Margherita',
@@ -32,7 +32,7 @@ const pizzaMenu = [
         icon: '🥗',
         size: 'Medium',
         price: 10.99,
-        toppings: ['Tomate', 'Mozzarella', 'Légumes']
+        toppings: ['Tomate', 'Mozzarella', 'Légumes frais']
     },
     {
         name: 'Quatre Fromages',
@@ -57,135 +57,196 @@ const pizzaMenu = [
     }
 ];
 
-// Initialisation au chargement de la page
+// Initialize App
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🍕 Application Pizza Delivery initialisée');
-    
-    // Gérer le passage à l'étape 2
+    console.log('🍕 Pizza Express initialized');
+
+    // Event Listeners
     document.getElementById('continueToMenu').addEventListener('click', handleContinueToMenu);
-    
-    // Gérer la commande
-    document.getElementById('placeOrder').addEventListener('click', handlePlaceOrder);
-    
-    // Gérer nouvelle commande
-    document.getElementById('newOrder').addEventListener('click', handleNewOrder);
-    
-    // Afficher le menu
+
+    const placeOrderBtn = document.getElementById('placeOrder');
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', handlePlaceOrder);
+    }
+
+    const newOrderBtn = document.getElementById('newOrder');
+    if (newOrderBtn) {
+        newOrderBtn.addEventListener('click', handleNewOrder);
+    }
+
+    // Cart Toggle
+    const cartToggle = document.getElementById('cartToggle');
+    if (cartToggle) {
+        cartToggle.addEventListener('click', toggleCart);
+    }
+
+    // Back button
+    const backBtn = document.getElementById('backToStep1');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => goToStep(1));
+    }
+
+    // Display Menu
     displayPizzaMenu();
-    
-    // Mettre à jour l'interface
-    updateStepIndicators();
+
+    // Initialize cart
+    updateCart();
 });
 
 /**
- * Affiche le menu des pizzas
+ * Display Pizza Menu
  */
 function displayPizzaMenu() {
     const menuContainer = document.getElementById('pizzaMenu');
+    if (!menuContainer) return;
+
     menuContainer.innerHTML = '';
-    
+
     pizzaMenu.forEach((pizza, index) => {
         const pizzaCard = document.createElement('div');
         pizzaCard.className = 'pizza-card';
         pizzaCard.innerHTML = `
-            <div class="pizza-icon">${pizza.icon}</div>
-            <h3>${pizza.name}</h3>
-            <div class="price">${pizza.price.toFixed(2)} EUR</div>
-            <div class="toppings">${pizza.toppings.join(', ')}</div>
-            <button class="btn btn-primary" onclick="addToCart(${index})">
-                🛒 Ajouter au panier
-            </button>
+            <div class="pizza-image">
+                ${pizza.icon}
+            </div>
+            <div class="pizza-card-content">
+                <h3 class="pizza-name">${pizza.name}</h3>
+                <p class="pizza-toppings">${pizza.toppings.join(' • ')}</p>
+                <div class="pizza-footer">
+                    <span class="pizza-price">${pizza.price.toFixed(2)} €</span>
+                    <button class="btn-add-cart" onclick="addToCart(${index})">
+                        Ajouter
+                    </button>
+                </div>
+            </div>
         `;
         menuContainer.appendChild(pizzaCard);
     });
 }
 
 /**
- * Ajoute une pizza au panier
+ * Add Pizza to Cart
  */
 function addToCart(pizzaIndex) {
     const pizza = pizzaMenu[pizzaIndex];
     cart.push({...pizza});
     updateCart();
-    showMessage('Pizza ajoutée au panier ! 🎉', 'success');
+    showToast('Pizza ajoutée au panier !', 'success');
 }
 
 /**
- * Retire une pizza du panier
+ * Remove from Cart
  */
 function removeFromCart(index) {
     cart.splice(index, 1);
     updateCart();
-    showMessage('Pizza retirée du panier', 'info');
+    showToast('Pizza retirée du panier', 'info');
 }
 
 /**
- * Met à jour l'affichage du panier
+ * Update Cart Display
  */
 function updateCart() {
     const cartItemsContainer = document.getElementById('cartItems');
-    const cartTotalElement = document.getElementById('cartTotal');
+    const cartBadge = document.getElementById('cartBadge');
+    const cartTotal = document.getElementById('cartTotal');
+    const cartTotalWithDelivery = document.getElementById('cartTotalWithDelivery');
     const placeOrderButton = document.getElementById('placeOrder');
-    
+
+    // Update badge
+    if (cartBadge) {
+        cartBadge.textContent = cart.length;
+    }
+
+    if (!cartItemsContainer) return;
+
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Votre panier est vide</p>';
-        cartTotalElement.textContent = '0.00';
-        placeOrderButton.disabled = true;
+        cartItemsContainer.innerHTML = `
+            <div class="empty-cart">
+                <span class="empty-icon">🛒</span>
+                <p>Votre panier est vide</p>
+            </div>
+        `;
+        if (cartTotal) cartTotal.textContent = '0.00 €';
+        if (cartTotalWithDelivery) cartTotalWithDelivery.textContent = '2.50 €';
+        if (placeOrderButton) placeOrderButton.disabled = true;
     } else {
         cartItemsContainer.innerHTML = '';
         let total = 0;
-        
+
         cart.forEach((pizza, index) => {
             total += pizza.price;
-            
+
             const cartItem = document.createElement('div');
             cartItem.className = 'cart-item';
             cartItem.innerHTML = `
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${pizza.icon} ${pizza.name}</div>
-                    <div class="cart-item-details">${pizza.size} - ${pizza.toppings.join(', ')}</div>
+                <div class="cart-item-icon">${pizza.icon}</div>
+                <div class="cart-item-details">
+                    <div class="cart-item-name">${pizza.name}</div>
+                    <div class="cart-item-info">${pizza.size} • ${pizza.toppings.slice(0, 2).join(', ')}</div>
+                    <div class="cart-item-price">${pizza.price.toFixed(2)} €</div>
                 </div>
-                <div class="cart-item-price">${pizza.price.toFixed(2)} EUR</div>
-                <button class="remove-btn" onclick="removeFromCart(${index})">❌</button>
+                <button class="btn-remove" onclick="removeFromCart(${index})">✕</button>
             `;
             cartItemsContainer.appendChild(cartItem);
         });
-        
-        cartTotalElement.textContent = total.toFixed(2);
-        placeOrderButton.disabled = false;
+
+        if (cartTotal) cartTotal.textContent = total.toFixed(2) + ' €';
+        if (cartTotalWithDelivery) cartTotalWithDelivery.textContent = (total + 2.50).toFixed(2) + ' €';
+        if (placeOrderButton) placeOrderButton.disabled = false;
     }
 }
 
 /**
- * Gère le passage à l'étape 2 (menu)
+ * Toggle Cart Visibility
+ */
+function toggleCart() {
+    const cartContent = document.getElementById('cartContent');
+    const cartToggleIcon = document.getElementById('cartToggleIcon');
+
+    if (!cartContent || !cartToggleIcon) return;
+
+    if (cartContent.style.display === 'none') {
+        cartContent.style.display = 'flex';
+        cartToggleIcon.textContent = '▼';
+    } else {
+        cartContent.style.display = 'none';
+        cartToggleIcon.textContent = '▲';
+    }
+}
+
+/**
+ * Handle Continue to Menu
  */
 function handleContinueToMenu() {
     const name = document.getElementById('customerName').value.trim();
     const address = document.getElementById('customerAddress').value.trim();
-    
+
     if (!name || !address) {
-        showMessage('⚠️ Veuillez remplir tous les champs', 'error');
+        showToast('Veuillez remplir tous les champs', 'error');
         return;
     }
-    
+
     customerInfo.name = name;
     customerInfo.address = address;
-    
+
     goToStep(2);
-    showMessage('Bienvenue ' + name + ' ! Choisissez vos pizzas 🍕', 'success');
+    showToast(`Bienvenue ${name} ! 👋`, 'success');
 }
 
 /**
- * Gère la validation de la commande
+ * Handle Place Order
  */
 async function handlePlaceOrder() {
     if (cart.length === 0) {
-        showMessage('⚠️ Votre panier est vide', 'error');
+        showToast('Votre panier est vide', 'error');
         return;
     }
-    
+
     try {
-        // 1. Créer la commande
+        showToast('Préparation de votre commande...', 'info');
+
+        // 1. Create Order
         const orderResponse = await fetch('/orders', {
             method: 'POST',
             headers: {
@@ -196,15 +257,15 @@ async function handlePlaceOrder() {
                 customer_address: customerInfo.address
             })
         });
-        
+
         if (!orderResponse.ok) {
             throw new Error('Erreur lors de la création de la commande');
         }
-        
+
         const order = await orderResponse.json();
         currentOrderId = order.order_id;
-        
-        // 2. Ajouter les pizzas à la commande
+
+        // 2. Add Pizzas to Order
         for (const pizza of cart) {
             await fetch(`/orders/${currentOrderId}/pizzas`, {
                 method: 'POST',
@@ -219,8 +280,8 @@ async function handlePlaceOrder() {
                 })
             });
         }
-        
-        // 3. Mettre à jour le statut de la commande
+
+        // 3. Update Order Status
         await fetch(`/orders/${currentOrderId}/status`, {
             method: 'PATCH',
             headers: {
@@ -230,8 +291,8 @@ async function handlePlaceOrder() {
                 status: 'preparing'
             })
         });
-        
-        // 4. Créer la livraison
+
+        // 4. Create Delivery
         await fetch('/deliveries', {
             method: 'POST',
             headers: {
@@ -242,140 +303,177 @@ async function handlePlaceOrder() {
                 driver_name: 'Mario 🚗'
             })
         });
-        
-        // 5. Afficher le récapitulatif
+
+        // 5. Display Order Summary
         displayOrderSummary();
         goToStep(3);
-        
-        showMessage('✅ Commande validée avec succès !', 'success');
-        
-        // 6. Démarrer le suivi de commande
+
+        showToast('Commande validée avec succès ! 🎉', 'success');
+
+        // 6. Start Order Tracking
         startOrderTracking();
-        
+
     } catch (error) {
         console.error('Erreur:', error);
-        showMessage('❌ Erreur lors de la commande. Veuillez réessayer.', 'error');
+        showToast('Erreur lors de la commande. Veuillez réessayer.', 'error');
     }
 }
 
 /**
- * Affiche le récapitulatif de commande
+ * Display Order Summary
  */
 function displayOrderSummary() {
-    document.getElementById('orderIdDisplay').textContent = currentOrderId;
+    document.getElementById('orderIdDisplay').textContent = currentOrderId.substring(0, 8);
     document.getElementById('customerNameDisplay').textContent = customerInfo.name;
     document.getElementById('customerAddressDisplay').textContent = customerInfo.address;
     document.getElementById('pizzaCountDisplay').textContent = cart.length;
-    
-    const total = cart.reduce((sum, pizza) => sum + pizza.price, 0);
-    document.getElementById('orderTotalDisplay').textContent = total.toFixed(2) + ' EUR';
+
+    const total = cart.reduce((sum, pizza) => sum + pizza.price, 0) + 2.50;
+    document.getElementById('orderTotalDisplay').textContent = total.toFixed(2) + ' €';
 }
 
 /**
- * Démarre le suivi de commande
+ * Start Order Tracking
  */
 function startOrderTracking() {
     const orderStatusElement = document.getElementById('orderStatus');
+
     const statuses = [
-        { text: '👨‍🍳 Votre pizza est en préparation...', delay: 0 },
-        { text: '🔥 Votre pizza est au four...', delay: 3000 },
-        { text: '📦 Votre pizza est prête !', delay: 6000 },
-        { text: '🚗 Votre livreur est en route !', delay: 9000 },
-        { text: '🎉 Votre pizza est livrée ! Bon appétit !', delay: 12000 }
+        {
+            text: 'Votre commande est en préparation',
+            timeline: 'timeline-preparing',
+            delay: 0
+        },
+        {
+            text: 'Votre pizza est au four 🔥',
+            timeline: 'timeline-preparing',
+            delay: 3000
+        },
+        {
+            text: 'Votre commande est prête',
+            timeline: 'timeline-delivery',
+            delay: 6000
+        },
+        {
+            text: 'Mario est en route vers vous 🚗',
+            timeline: 'timeline-delivery',
+            delay: 9000
+        },
+        {
+            text: 'Livraison réussie ! Bon appétit 🎉',
+            timeline: 'timeline-delivered',
+            delay: 12000
+        }
     ];
-    
+
     statuses.forEach(status => {
         setTimeout(() => {
-            orderStatusElement.textContent = status.text;
-            orderStatusElement.classList.add('fade-in');
-            
+            if (orderStatusElement) {
+                orderStatusElement.textContent = status.text;
+            }
+
+            // Update timeline
+            const timelineItem = document.getElementById(status.timeline);
+            if (timelineItem) {
+                timelineItem.classList.add('active');
+            }
+
             if (status.delay === 12000) {
-                // Afficher le bouton nouvelle commande
-                document.getElementById('newOrder').classList.remove('hidden');
+                const newOrderBtn = document.getElementById('newOrder');
+                if (newOrderBtn) {
+                    newOrderBtn.classList.remove('hidden');
+                }
             }
         }, status.delay);
     });
 }
 
 /**
- * Gère une nouvelle commande
+ * Handle New Order
  */
 function handleNewOrder() {
     currentStep = 1;
     customerInfo = { name: '', address: '' };
     cart = [];
     currentOrderId = null;
-    
-    // Réinitialiser les champs
+
+    // Reset fields
     document.getElementById('customerName').value = '';
     document.getElementById('customerAddress').value = '';
-    
-    // Réinitialiser le panier
+
+    // Reset cart
     updateCart();
-    
-    // Cacher le bouton nouvelle commande
-    document.getElementById('newOrder').classList.add('hidden');
-    
-    // Retourner à l'étape 1
+
+    // Hide new order button
+    const newOrderBtn = document.getElementById('newOrder');
+    if (newOrderBtn) {
+        newOrderBtn.classList.add('hidden');
+    }
+
+    // Reset timeline
+    document.querySelectorAll('.timeline-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    const firstTimeline = document.querySelector('.timeline-item');
+    if (firstTimeline) {
+        firstTimeline.classList.add('active');
+    }
+
+    // Go to step 1
     goToStep(1);
-    
-    showMessage('✨ Prêt pour une nouvelle commande !', 'info');
+
+    showToast('Prêt pour une nouvelle commande ! ✨', 'info');
 }
 
 /**
- * Change d'étape
+ * Go to Step
  */
 function goToStep(step) {
     currentStep = step;
-    
-    // Masquer toutes les étapes
-    document.getElementById('step1').classList.add('hidden');
-    document.getElementById('step2').classList.add('hidden');
-    document.getElementById('step3').classList.add('hidden');
-    
-    // Afficher l'étape courante
-    document.getElementById(`step${step}`).classList.remove('hidden');
-    
-    // Mettre à jour les indicateurs
-    updateStepIndicators();
-}
 
-/**
- * Met à jour les indicateurs d'étape
- */
-function updateStepIndicators() {
-    const steps = document.querySelectorAll('.step');
-    
-    steps.forEach((stepElement, index) => {
-        const stepNumber = index + 1;
-        
-        if (stepNumber < currentStep) {
-            stepElement.classList.add('completed');
-            stepElement.classList.remove('active');
-        } else if (stepNumber === currentStep) {
-            stepElement.classList.add('active');
-            stepElement.classList.remove('completed');
-        } else {
-            stepElement.classList.remove('active', 'completed');
-        }
+    console.log('Going to step:', step);
+
+    // Hide all steps
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+
+    if (step1) step1.classList.add('hidden');
+    if (step2) step2.classList.add('hidden');
+    if (step3) step3.classList.add('hidden');
+
+    // Show current step
+    const currentStepElement = document.getElementById(`step${step}`);
+    if (currentStepElement) {
+        currentStepElement.classList.remove('hidden');
+    }
+
+    // Update nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
     });
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /**
- * Affiche un message
+ * Show Toast Message
  */
-function showMessage(text, type = 'info') {
+function showToast(text, type = 'info') {
     const messageContainer = document.getElementById('messageContainer');
-    
-    const message = document.createElement('div');
-    message.className = `message ${type} fade-in`;
-    message.textContent = text;
-    
-    messageContainer.appendChild(message);
-    
-    // Supprimer le message après 5 secondes
+    if (!messageContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = text;
+
+    messageContainer.appendChild(toast);
+
+    // Remove after 4 seconds
     setTimeout(() => {
-        message.remove();
-    }, 5000);
+        toast.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
 }
 

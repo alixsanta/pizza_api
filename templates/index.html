@@ -3,64 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍕 Pizza Delivery - Commandez votre pizza !</title>
+    <title>Pizza Express - Livraison rapide</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🍕 Pizza Delivery</h1>
-            <p>Commandez votre pizza préférée en quelques clics !</p>
-        </div>
-
-        <!-- Messages -->
-        <div id="messageContainer"></div>
-
-        <!-- Indicateurs d'étapes -->
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-label">Vos informations</div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🍕</span>
+                <span class="logo-text">Pizza Express</span>
             </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-label">Choisir vos pizzas</div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">Commander</a>
+                <a href="#" class="nav-link">Menu</a>
+                <a href="#" class="nav-link">Offres</a>
             </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-label">Suivi de commande</div>
+            <div class="nav-cart" id="navCart">
+                <span class="cart-icon">🛒</span>
+                <span class="cart-badge" id="cartBadge">0</span>
             </div>
         </div>
+    </nav>
 
-        <!-- Étape 1 : Informations client -->
+    <!-- Messages Toast -->
+    <div id="messageContainer" class="toast-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Étape 1 : Informations de livraison -->
         <div id="step1" class="step-content">
-            <div class="customer-form fade-in">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">📝 Vos informations</h2>
-
-                <div class="form-group">
-                    <label for="customerName">👤 Votre nom</label>
-                    <input
-                        type="text"
-                        id="customerName"
-                        placeholder="Ex: Jean Dupont"
-                        required
-                    >
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">La meilleure pizza<br>livrée chez vous</h1>
+                    <p class="hero-subtitle">Commandez maintenant et recevez votre pizza en 30 minutes</p>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="customerAddress">📍 Adresse de livraison</label>
-                    <textarea
-                        id="customerAddress"
-                        rows="3"
-                        placeholder="Ex: 123 Rue de la Pizza, 75001 Paris"
-                        required
-                    ></textarea>
-                </div>
+            <div class="delivery-form-wrapper">
+                <div class="delivery-form">
+                    <h2 class="section-title">Où livrons-nous votre commande ?</h2>
 
-                <div class="btn-group">
-                    <button id="continueToMenu" class="btn btn-primary">
-                        Continuer vers le menu 🍕
+                    <div class="input-group">
+                        <label for="customerName" class="input-label">Nom complet</label>
+                        <input
+                            type="text"
+                            id="customerName"
+                            class="input-field"
+                            placeholder="Jean Dupont"
+                            required
+                        >
+                    </div>
+
+                    <div class="input-group">
+                        <label for="customerAddress" class="input-label">Adresse de livraison</label>
+                        <textarea
+                            id="customerAddress"
+                            rows="3"
+                            class="input-field"
+                            placeholder="123 Rue de la République, 75001 Paris"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <button id="continueToMenu" class="btn-main">
+                        Voir le menu
+                        <span class="btn-icon">→</span>
                     </button>
                 </div>
             </div>
@@ -68,85 +79,136 @@
 
         <!-- Étape 2 : Menu des pizzas -->
         <div id="step2" class="step-content hidden">
-            <h2 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">
-                🍕 Nos pizzas
-            </h2>
-
-            <!-- Menu des pizzas -->
-            <div id="pizzaMenu" class="pizza-menu"></div>
-
-            <!-- Panier -->
-            <div class="cart">
-                <h2>🛒 Votre panier</h2>
-                <div id="cartItems" class="cart-items">
-                    <p style="text-align: center; color: #7f8c8d;">Votre panier est vide</p>
-                </div>
-                <div class="cart-total">
-                    <span>Total :</span>
-                    <span class="cart-total-amount"><span id="cartTotal">0.00</span> EUR</span>
-                </div>
-                <div class="btn-group">
-                    <button id="placeOrder" class="btn btn-success" disabled>
-                        🛒 Passer la commande
+            <div class="menu-header">
+                <div class="container-fluid">
+                    <button id="backToStep1" class="btn-back">
+                        <span>←</span> Retour
                     </button>
+                    <h2 class="menu-title">Notre menu</h2>
+                    <div class="menu-filters">
+                        <button class="filter-btn active">Toutes</button>
+                        <button class="filter-btn">Classiques</button>
+                        <button class="filter-btn">Spéciales</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-container">
+                <div class="menu-grid" id="pizzaMenu"></div>
+            </div>
+
+            <!-- Panier flottant -->
+            <div class="floating-cart" id="floatingCart">
+                <div class="cart-header">
+                    <h3 class="cart-title">Votre commande</h3>
+                    <button class="cart-toggle" id="cartToggle">
+                        <span id="cartToggleIcon">▼</span>
+                    </button>
+                </div>
+                <div class="cart-content" id="cartContent">
+                    <div id="cartItems" class="cart-items-list">
+                        <div class="empty-cart">
+                            <span class="empty-icon">🛒</span>
+                            <p>Votre panier est vide</p>
+                        </div>
+                    </div>
+                    <div class="cart-footer">
+                        <div class="cart-subtotal">
+                            <span>Sous-total</span>
+                            <span class="subtotal-price" id="cartTotal">0.00 €</span>
+                        </div>
+                        <div class="cart-delivery">
+                            <span>Livraison</span>
+                            <span class="delivery-price">2.50 €</span>
+                        </div>
+                        <div class="cart-total-line">
+                            <span>Total</span>
+                            <span class="total-price" id="cartTotalWithDelivery">2.50 €</span>
+                        </div>
+                        <button id="placeOrder" class="btn-checkout" disabled>
+                            Passer la commande
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Étape 3 : Suivi de commande -->
         <div id="step3" class="step-content hidden">
-            <div class="tracking fade-in">
-                <h2>🎉 Commande confirmée !</h2>
-
-                <div class="order-status" id="orderStatus">
-                    👨‍🍳 Votre pizza est en préparation...
+            <div class="tracking-container">
+                <div class="tracking-header">
+                    <div class="success-icon">✓</div>
+                    <h2 class="tracking-title">Commande confirmée !</h2>
+                    <p class="tracking-subtitle">Votre commande #<span id="orderIdDisplay">-</span> est en cours de préparation</p>
                 </div>
 
-                <div class="delivery-info">
-                    <h3>📋 Détails de votre commande</h3>
-
-                    <div class="delivery-detail">
-                        <span class="delivery-label">Numéro de commande :</span>
-                        <span class="delivery-value" id="orderIdDisplay">-</span>
-                    </div>
-
-                    <div class="delivery-detail">
-                        <span class="delivery-label">Client :</span>
-                        <span class="delivery-value" id="customerNameDisplay">-</span>
-                    </div>
-
-                    <div class="delivery-detail">
-                        <span class="delivery-label">Adresse de livraison :</span>
-                        <span class="delivery-value" id="customerAddressDisplay">-</span>
-                    </div>
-
-                    <div class="delivery-detail">
-                        <span class="delivery-label">Nombre de pizzas :</span>
-                        <span class="delivery-value" id="pizzaCountDisplay">-</span>
-                    </div>
-
-                    <div class="delivery-detail">
-                        <span class="delivery-label">Total :</span>
-                        <span class="delivery-value" id="orderTotalDisplay" style="color: #e74c3c; font-weight: bold;">-</span>
+                <div class="tracking-status">
+                    <div class="status-timeline">
+                        <div class="timeline-item active">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h4>Commande reçue</h4>
+                                <p>Nous avons bien reçu votre commande</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="timeline-preparing">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h4>En préparation</h4>
+                                <p id="orderStatus">En attente...</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="timeline-delivery">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h4>En livraison</h4>
+                                <p>Votre livreur est en route</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="timeline-delivered">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h4>Livrée</h4>
+                                <p>Bon appétit !</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="btn-group" style="margin-top: 30px;">
-                    <button id="newOrder" class="btn btn-primary hidden">
-                        ✨ Nouvelle commande
-                    </button>
+                <div class="order-summary">
+                    <h3>Détails de la commande</h3>
+                    <div class="summary-row">
+                        <span>Livraison à</span>
+                        <span id="customerAddressDisplay">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Pour</span>
+                        <span id="customerNameDisplay">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Nombre d'articles</span>
+                        <span id="pizzaCountDisplay">-</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total payé</span>
+                        <span id="orderTotalDisplay">-</span>
+                    </div>
                 </div>
 
-                <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px; border: 2px solid #ffc107;">
-                    <p style="margin: 0; color: #856404;">
-                        <strong>💡 Astuce :</strong> Vous recevrez une notification lorsque votre livreur sera en route !
-                    </p>
-                </div>
+                <button id="newOrder" class="btn-new-order hidden">
+                    Nouvelle commande
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Script JavaScript -->
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Pizza Express. Tous droits réservés.</p>
+        </div>
+    </footer>
+
     <script src="/static/js/app.js"></script>
 </body>
 </html>

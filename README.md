@@ -13,7 +13,7 @@
 - 📦 **Gestion des commandes** - Validation automatique (min 1 pizza)
 - 🚗 **Suivi de livraison** - Tracking GPS en temps réel
 - 💰 **Support multi-devises** - EUR, USD, GBP, CAD
-- 🎨 **Interface web** - Interface moderne et responsive
+- 🎨 **Interface web moderne** - Design avec animations fluides
 - 🧪 **Tests complets** - 65 tests (unitaires + E2E)
 - 📚 **Documentation API** - Endpoints documentés avec exemples
 
