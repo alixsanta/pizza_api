@@ -61,11 +61,13 @@ pizza_api/
 ├── app/
 │   ├── models/
 │   │   ├── __init__.py
+│   │   ├── price.py       # Classe Price (gestion des prix avec devises)
 │   │   ├── pizza.py       # Classe Pizza
-│   │   ├── order.py       # Classe Order
+│   │   ├── order.py       # Classe Order (avec validation)
 │   │   └── delivery.py    # Classe Delivery
 │   └── app.py             # Application Flask avec tous les endpoints
 ├── tests/
+│   ├── test_price.py      # Tests unitaires Price
 │   ├── test_pizza.py      # Tests unitaires Pizza
 │   ├── test_order.py      # Tests unitaires Order
 │   ├── test_delivery.py   # Tests unitaires Delivery
@@ -73,6 +75,7 @@ pizza_api/
 ├── run.py                 # Point d'entrée de l'API
 ├── requirements.txt       # Dépendances Python
 ├── API_DOCUMENTATION.md   # Documentation complète de l'API
+├── PRICE_DOCUMENTATION.md # Documentation de la classe Price
 └── README.md             # Ce fichier
 ```
 
@@ -96,8 +99,13 @@ Ce projet a été développé en suivant l'approche Test-Driven Development :
 
 ### Couverture des tests
 
-- **27 tests unitaires** pour les 3 classes métier
+- **20 tests unitaires** pour Price
+- **8 tests unitaires** pour Pizza
+- **18 tests unitaires** pour Order (avec validation)
+- **11 tests unitaires** pour Delivery
 - **Tests E2E** pour valider l'ensemble de l'API
+
+**Total : 57+ tests**
 
 ## 🛠️ Technologies utilisées
 
@@ -138,17 +146,27 @@ curl -X PATCH http://localhost:5000/deliveries/{delivery_id}/complete
 
 ## 🎯 Fonctionnalités
 
+### Price
+- ✅ Gestion multi-devises (EUR, USD, GBP, CAD)
+- ✅ Opérations arithmétiques (addition, soustraction, multiplication)
+- ✅ Comparaisons de prix
+- ✅ Application de réductions et taxes
+- ✅ Formatage avec ou sans symboles
+
 ### Pizza
 - ✅ Création avec nom, taille, prix et garnitures
 - ✅ Validation de taille (Small, Medium, Large)
 - ✅ Validation de prix (non négatif)
+- ✅ Support des prix avec devises (Price)
 - ✅ Ajout/suppression de garnitures
 
 ### Order
 - ✅ Création avec client et adresse
+- ✅ **Validation : au moins une pizza obligatoire**
 - ✅ Ajout/suppression de pizzas
-- ✅ Calcul automatique du total
+- ✅ Calcul automatique du total (avec Price)
 - ✅ Gestion des statuts (pending, preparing, ready, etc.)
+- ✅ **Validation automatique lors du changement de statut**
 - ✅ Horodatage de création
 
 ### Delivery

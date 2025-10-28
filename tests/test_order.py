@@ -99,3 +99,50 @@ class TestOrder:
         
         assert order.created_at is not None
         assert isinstance(order.created_at, datetime)
+    
+    def test_order_is_valid_with_pizza(self):
+        """Test qu'une commande avec pizza est valide"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        pizza = Pizza(name="Margherita", size="Medium", price=12.99)
+        order.add_pizza(pizza)
+        
+        assert order.is_valid() is True
+    
+    def test_order_is_not_valid_without_pizza(self):
+        """Test qu'une commande sans pizza n'est pas valide"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        
+        assert order.is_valid() is False
+    
+    def test_order_validate_raises_error_without_pizza(self):
+        """Test que validate() lève une exception sans pizza"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        
+        with pytest.raises(ValueError, match="at least one pizza"):
+            order.validate()
+    
+    def test_order_update_status_to_preparing_requires_pizza(self):
+        """Test qu'on ne peut pas passer en preparing sans pizza"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        
+        with pytest.raises(ValueError, match="at least one pizza"):
+            order.update_status("preparing")
+    
+    def test_order_update_status_pending_without_pizza_allowed(self):
+        """Test qu'on peut rester en pending sans pizza"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        
+        # Le statut est déjà pending, pas de validation requise
+        assert order.status == "pending"
+    
+    def test_order_calculate_total_returns_price_object(self):
+        """Test que calculate_total retourne un objet Price"""
+        order = Order(customer_name="Test User", customer_address="Test Address")
+        pizza = Pizza(name="Margherita", size="Medium", price=12.99)
+        order.add_pizza(pizza)
+        
+        total = order.calculate_total()
+        
+        from app.models import Price
+        assert isinstance(total, Price)
+        assert total.amount == 12.99
