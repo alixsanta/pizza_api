@@ -3,6 +3,7 @@ Application Flask principale pour l'API de livraison de pizzas
 """
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from flask_migrate import Migrate
 from app.models import Pizza, Order, Delivery
 from app.database import db, init_db
 from app.models.db_models import PizzaDB, OrderDB, OrderPizzaDB, DeliveryDB
@@ -24,6 +25,9 @@ CORS(app)
 
 # Initialiser la base de données
 init_db(app)
+
+# Initialiser Flask-Migrate pour les migrations
+migrate = Migrate(app, db)
 
 
 # ==================== WEB INTERFACE ====================
