@@ -11,8 +11,8 @@ class TestPizza:
         
         assert pizza.name == "Margherita"
         assert pizza.size == "Medium"
-        assert pizza.price == 12.99
-    
+        assert pizza.price.amount == 12.99
+
     def test_pizza_with_toppings(self):
         """Test la création d'une pizza avec des garnitures"""
         pizza = Pizza(

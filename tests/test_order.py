@@ -60,12 +60,14 @@ class TestOrder:
         order.add_pizza(pizza2)
         
         total = order.calculate_total()
-        assert total == 28.98
-    
+        assert total.amount == 28.98
+
     def test_order_update_status(self):
         """Test la mise à jour du statut de la commande"""
         order = Order(customer_name="Diana Evans", customer_address="987 Birch Ln")
-        
+        pizza = Pizza(name="Margherita", size="Medium", price=12.99)
+        order.add_pizza(pizza)
+
         order.update_status("preparing")
         assert order.status == "preparing"
         

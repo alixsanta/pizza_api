@@ -1,27 +1,21 @@
 import pytest
 import json
 from app.app import app
+from app.database import db
 
 
 @pytest.fixture
 def client():
     """Fixture pour le client de test Flask"""
     app.config['TESTING'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+
     with app.test_client() as client:
-        yield client
-
-
-@pytest.fixture
-def reset_stores():
-    """Fixture pour réinitialiser les stores entre les tests"""
-    from app.app import pizzas_store, orders_store, deliveries_store
-    pizzas_store.clear()
-    orders_store.clear()
-    deliveries_store.clear()
-    yield
-    pizzas_store.clear()
-    orders_store.clear()
-    deliveries_store.clear()
+        with app.app_context():
+            db.create_all()
+            yield client
+            db.session.remove()
+            db.drop_all()
 
 
 class TestHealthEndpoint:
@@ -38,7 +32,7 @@ class TestHealthEndpoint:
 class TestPizzaEndpoints:
     """Tests E2E pour les endpoints Pizza"""
     
-    def test_create_pizza(self, client, reset_stores):
+    def test_create_pizza(self, client):
         """Test la création d'une pizza via l'API"""
         pizza_data = {
             "name": "Margherita",
@@ -58,7 +52,7 @@ class TestPizzaEndpoints:
         assert data['price'] == 12.99
         assert 'pizza_id' in data
     
-    def test_create_pizza_invalid_size(self, client, reset_stores):
+    def test_create_pizza_invalid_size(self, client):
         """Test qu'une taille invalide retourne une erreur"""
         pizza_data = {
             "name": "Test",
@@ -74,7 +68,7 @@ class TestPizzaEndpoints:
         data = json.loads(response.data)
         assert 'error' in data
     
-    def test_get_pizza(self, client, reset_stores):
+    def test_get_pizza(self, client):
         """Test la récupération d'une pizza"""
         # Créer une pizza d'abord
         pizza_data = {
@@ -94,7 +88,7 @@ class TestPizzaEndpoints:
         data = json.loads(response.data)
         assert data['name'] == "Pepperoni"
     
-    def test_get_all_pizzas(self, client, reset_stores):
+    def test_get_all_pizzas(self, client):
         """Test la récupération de toutes les pizzas"""
         # Créer plusieurs pizzas
         pizzas = [
@@ -118,7 +112,7 @@ class TestPizzaEndpoints:
 class TestOrderEndpoints:
     """Tests E2E pour les endpoints Order"""
     
-    def test_create_order(self, client, reset_stores):
+    def test_create_order(self, client):
         """Test la création d'une commande via l'API"""
         order_data = {
             "customer_name": "John Doe",
@@ -136,7 +130,7 @@ class TestOrderEndpoints:
         assert data['status'] == "pending"
         assert 'order_id' in data
     
-    def test_get_order(self, client, reset_stores):
+    def test_get_order(self, client):
         """Test la récupération d'une commande"""
         order_data = {
             "customer_name": "Jane Smith",
@@ -153,7 +147,7 @@ class TestOrderEndpoints:
         data = json.loads(response.data)
         assert data['customer_name'] == "Jane Smith"
     
-    def test_add_pizza_to_order(self, client, reset_stores):
+    def test_add_pizza_to_order(self, client):
         """Test l'ajout d'une pizza à une commande"""
         # Créer une commande
         order_data = {
@@ -180,7 +174,7 @@ class TestOrderEndpoints:
         assert len(data['pizzas']) == 1
         assert data['total'] == 12.99
     
-    def test_update_order_status(self, client, reset_stores):
+    def test_update_order_status(self, client):
         """Test la mise à jour du statut d'une commande"""
         # Créer une commande
         order_data = {
@@ -192,6 +186,16 @@ class TestOrderEndpoints:
                                      content_type='application/json')
         order_id = json.loads(order_response.data)['order_id']
         
+        # Ajouter une pizza d'abord (requis pour passer en "preparing")
+        pizza_data = {
+            "name": "Margherita",
+            "size": "Medium",
+            "price": 12.99
+        }
+        client.post(f'/orders/{order_id}/pizzas',
+                   data=json.dumps(pizza_data),
+                   content_type='application/json')
+
         # Mettre à jour le statut
         status_data = {"status": "preparing"}
         response = client.patch(f'/orders/{order_id}/status',
@@ -206,7 +210,7 @@ class TestOrderEndpoints:
 class TestDeliveryEndpoints:
     """Tests E2E pour les endpoints Delivery"""
     
-    def test_create_delivery(self, client, reset_stores):
+    def test_create_delivery(self, client):
         """Test la création d'une livraison via l'API"""
         # Créer une commande d'abord
         order_data = {
@@ -233,7 +237,7 @@ class TestDeliveryEndpoints:
         assert data['status'] == "assigned"
         assert 'delivery_id' in data
     
-    def test_start_delivery(self, client, reset_stores):
+    def test_start_delivery(self, client):
         """Test le démarrage d'une livraison"""
         # Créer commande et livraison
         order_data = {
@@ -262,7 +266,7 @@ class TestDeliveryEndpoints:
         assert data['status'] == "in_transit"
         assert data['started_at'] is not None
     
-    def test_complete_delivery(self, client, reset_stores):
+    def test_complete_delivery(self, client):
         """Test la complétion d'une livraison"""
         # Créer commande et livraison
         order_data = {
@@ -292,7 +296,7 @@ class TestDeliveryEndpoints:
         assert data['status'] == "delivered"
         assert data['completed_at'] is not None
     
-    def test_update_delivery_location(self, client, reset_stores):
+    def test_update_delivery_location(self, client):
         """Test la mise à jour de la position GPS"""
         # Créer commande et livraison
         order_data = {
@@ -331,7 +335,7 @@ class TestDeliveryEndpoints:
 class TestEndToEndFlow:
     """Test du flux complet de bout en bout"""
     
-    def test_complete_pizza_delivery_flow(self, client, reset_stores):
+    def test_complete_pizza_delivery_flow(self, client):
         """Test le flux complet : Créer pizza → Commande → Livraison → Livrer"""
         
         # 1. Créer une pizza

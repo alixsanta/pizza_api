@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍕 Pizza Delivery - Commandez votre pizza !</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🍕 Pizza Delivery</h1>
+            <p>Commandez votre pizza préférée en quelques clics !</p>
+        </div>
+
+        <!-- Messages -->
+        <div id="messageContainer"></div>
+
+        <!-- Indicateurs d'étapes -->
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-label">Vos informations</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Choisir vos pizzas</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Suivi de commande</div>
+            </div>
+        </div>
+
+        <!-- Étape 1 : Informations client -->
+        <div id="step1" class="step-content">
+            <div class="customer-form fade-in">
+                <h2 style="color: #2c3e50; margin-bottom: 20px;">📝 Vos informations</h2>
+
+                <div class="form-group">
+                    <label for="customerName">👤 Votre nom</label>
+                    <input
+                        type="text"
+                        id="customerName"
+                        placeholder="Ex: Jean Dupont"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="customerAddress">📍 Adresse de livraison</label>
+                    <textarea
+                        id="customerAddress"
+                        rows="3"
+                        placeholder="Ex: 123 Rue de la Pizza, 75001 Paris"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button id="continueToMenu" class="btn btn-primary">
+                        Continuer vers le menu 🍕
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 2 : Menu des pizzas -->
+        <div id="step2" class="step-content hidden">
+            <h2 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">
+                🍕 Nos pizzas
+            </h2>
+
+            <!-- Menu des pizzas -->
+            <div id="pizzaMenu" class="pizza-menu"></div>
+
+            <!-- Panier -->
+            <div class="cart">
+                <h2>🛒 Votre panier</h2>
+                <div id="cartItems" class="cart-items">
+                    <p style="text-align: center; color: #7f8c8d;">Votre panier est vide</p>
+                </div>
+                <div class="cart-total">
+                    <span>Total :</span>
+                    <span class="cart-total-amount"><span id="cartTotal">0.00</span> EUR</span>
+                </div>
+                <div class="btn-group">
+                    <button id="placeOrder" class="btn btn-success" disabled>
+                        🛒 Passer la commande
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 3 : Suivi de commande -->
+        <div id="step3" class="step-content hidden">
+            <div class="tracking fade-in">
+                <h2>🎉 Commande confirmée !</h2>
+
+                <div class="order-status" id="orderStatus">
+                    👨‍🍳 Votre pizza est en préparation...
+                </div>
+
+                <div class="delivery-info">
+                    <h3>📋 Détails de votre commande</h3>
+
+                    <div class="delivery-detail">
+                        <span class="delivery-label">Numéro de commande :</span>
+                        <span class="delivery-value" id="orderIdDisplay">-</span>
+                    </div>
+
+                    <div class="delivery-detail">
+                        <span class="delivery-label">Client :</span>
+                        <span class="delivery-value" id="customerNameDisplay">-</span>
+                    </div>
+
+                    <div class="delivery-detail">
+                        <span class="delivery-label">Adresse de livraison :</span>
+                        <span class="delivery-value" id="customerAddressDisplay">-</span>
+                    </div>
+
+                    <div class="delivery-detail">
+                        <span class="delivery-label">Nombre de pizzas :</span>
+                        <span class="delivery-value" id="pizzaCountDisplay">-</span>
+                    </div>
+
+                    <div class="delivery-detail">
+                        <span class="delivery-label">Total :</span>
+                        <span class="delivery-value" id="orderTotalDisplay" style="color: #e74c3c; font-weight: bold;">-</span>
+                    </div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 30px;">
+                    <button id="newOrder" class="btn btn-primary hidden">
+                        ✨ Nouvelle commande
+                    </button>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px; border: 2px solid #ffc107;">
+                    <p style="margin: 0; color: #856404;">
+                        <strong>💡 Astuce :</strong> Vous recevrez une notification lorsque votre livreur sera en route !
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

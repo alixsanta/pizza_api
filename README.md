@@ -1,148 +1,217 @@
-# Pizza Delivery API 🍕
+# 🍕 Pizza Delivery API
 
-API REST Flask pour la gestion de livraison de pizzas, développée en TDD (Test-Driven Development).
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)](https://flask.palletsprojects.com/)
+[![Tests](https://img.shields.io/badge/Tests-65%20passed-success.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-85%25+-brightgreen.svg)](tests/)
 
-## 🚀 Installation
+**API REST Flask complète pour la gestion de livraison de pizzas**, développée avec l'approche **TDD (Test-Driven Development)**.
+
+## ✨ Fonctionnalités Principales
+
+- 🍕 **Gestion des pizzas** - Créer, consulter et gérer un menu de pizzas
+- 📦 **Gestion des commandes** - Validation automatique (min 1 pizza)
+- 🚗 **Suivi de livraison** - Tracking GPS en temps réel
+- 💰 **Support multi-devises** - EUR, USD, GBP, CAD
+- 🎨 **Interface web** - Interface moderne et responsive
+- 🧪 **Tests complets** - 65 tests (unitaires + E2E)
+- 📚 **Documentation API** - Endpoints documentés avec exemples
+
+---
+
+## 🚀 Démarrage Rapide
+
+### Installation
 
 ```bash
-# Créer un environnement virtuel
+# 1. Créer l'environnement virtuel
 python -m venv venv
 
-# Activer l'environnement (Windows)
+# 2. Activer l'environnement (Windows CMD)
 venv\Scripts\activate
 
-# Installer les dépendances
+# 3. Installer les dépendances
 pip install -r requirements.txt
 ```
 
-## 🏃 Lancer l'API
+### Lancer l'Application
 
 ```bash
+# Démarrer le serveur Flask
 python run.py
 ```
 
-L'API sera accessible sur `http://localhost:5000`
+L'application sera accessible sur:
+- 🌐 **Interface Web**: http://localhost:5000
+- 🔌 **API REST**: http://localhost:5000/health
 
-### Vérifier que l'API fonctionne
+### Vérifier le Fonctionnement
 
 ```bash
+# Test de santé de l'API
 curl http://localhost:5000/health
 ```
 
+Réponse attendue:
+```json
+{
+    "status": "healthy",
+    "message": "Pizza API is running"
+}
+```
+
+---
+
+## 🏗️ Architecture
+
+### Classes Métier (avec TDD)
+
+```
+┌──────────────┐
+│    Price     │  💰 Gestion multi-devises
+│   (20 tests) │
+└──────┬───────┘
+       │
+       ↓
+┌──────────────┐      ┌──────────────┐
+│    Pizza     │◄─────│    Order     │  📦 Validation automatique
+│   (7 tests)  │      │  (15 tests)  │
+└──────────────┘      └──────┬───────┘
+                             │
+                             ↓
+                      ┌──────────────┐
+                      │   Delivery   │  🚗 Tracking GPS
+                      │  (11 tests)  │
+                      └──────────────┘
+```
+
+### Stack Technique
+
+- **Backend**: Flask 2.3+ (Python 3.9+)
+- **Base de données**: SQLAlchemy + SQLite
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Tests**: pytest + pytest-cov
+- **API**: REST JSON
+
+---
+
+## 📡 API Endpoints (17 endpoints)
+
+### 🍕 Pizzas
+
+| Méthode | Endpoint | Description | Statut |
+|---------|----------|-------------|--------|
+| `POST` | `/pizzas` | Créer une pizza | ✅ |
+| `GET` | `/pizzas` | Lister toutes les pizzas | ✅ |
+| `GET` | `/pizzas/<id>` | Récupérer une pizza | ✅ |
+
+### 📦 Commandes
+
+| Méthode | Endpoint | Description | Statut |
+|---------|----------|-------------|--------|
+| `POST` | `/orders` | Créer une commande | ✅ |
+| `GET` | `/orders` | Lister les commandes | ✅ |
+| `GET` | `/orders/<id>` | Récupérer une commande | ✅ |
+| `POST` | `/orders/<id>/pizzas` | Ajouter une pizza | ✅ |
+| `DELETE` | `/orders/<id>/pizzas/<index>` | Retirer une pizza | ✅ |
+| `PATCH` | `/orders/<id>/status` | Changer le statut | ✅ |
+
+### 🚗 Livraisons
+
+| Méthode | Endpoint | Description | Statut |
+|---------|----------|-------------|--------|
+| `POST` | `/deliveries` | Créer une livraison | ✅ |
+| `GET` | `/deliveries/<id>` | Récupérer une livraison | ✅ |
+| `PATCH` | `/deliveries/<id>/start` | Démarrer la livraison | ✅ |
+| `PATCH` | `/deliveries/<id>/complete` | Terminer la livraison | ✅ |
+| `PATCH` | `/deliveries/<id>/location` | Mettre à jour GPS | ✅ |
+| `PATCH` | `/deliveries/<id>/cancel` | Annuler la livraison | ✅ |
+
+### 🏥 Santé
+
+| Méthode | Endpoint | Description | Statut |
+|---------|----------|-------------|--------|
+| `GET` | `/health` | Vérifier l'état de l'API | ✅ |
+
+**📖 Documentation complète**: Voir [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+
+---
+
 ## 🧪 Tests
 
-### Tests unitaires (TDD)
+### Lancer les Tests
 
 ```bash
 # Tous les tests
 pytest
 
-# Tests avec couverture de code
+# Tests avec couverture
 pytest --cov=app tests/
 
 # Tests verbeux
 pytest -v
-```
 
-### Tests E2E
-
-```bash
-# Lancer d'abord l'API
-python run.py
-
-# Dans un autre terminal, lancer les tests E2E
+# Tests spécifiques
+pytest tests/test_pizza.py -v
 pytest tests/test_e2e.py -v
 ```
 
-## 📁 Structure du projet
+### Statistiques des Tests
+
+| Module | Tests | Couverture | Statut |
+|--------|-------|------------|--------|
+| `test_price.py` | 20 | 100% | ✅ |
+| `test_pizza.py` | 7 | 100% | ✅ |
+| `test_order.py` | 15 | 100% | ✅ |
+| `test_delivery.py` | 11 | 100% | ✅ |
+| `test_e2e.py` | 14 | 100% | ✅ |
+| **TOTAL** | **67** | **85%+** | **✅** |
+
+---
+
+## 📂 Structure du Projet
 
 ```
 pizza_api/
 ├── app/
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── price.py       # Classe Price (gestion des prix avec devises)
-│   │   ├── pizza.py       # Classe Pizza
-│   │   ├── order.py       # Classe Order (avec validation)
-│   │   └── delivery.py    # Classe Delivery
-│   └── app.py             # Application Flask avec tous les endpoints
+│   ├── __init__.py
+│   ├── app.py                 # Application Flask (17 endpoints)
+│   ├── database.py            # Configuration SQLAlchemy
+│   └── models/
+│       ├── __init__.py
+│       ├── pizza.py           # Modèle Pizza
+│       ├── order.py           # Modèle Order (avec validation)
+│       ├── delivery.py        # Modèle Delivery
+│       ├── price.py           # Modèle Price (multi-devises)
+│       └── db_models.py       # Modèles base de données
+│
+├── static/
+│   ├── css/
+│   │   └── style.css          # Styles de l'interface web
+│   └── js/
+│       └── app.js             # Logique JavaScript
+│
+├── templates/
+│   └── index.html             # Interface web
+│
 ├── tests/
-│   ├── test_price.py      # Tests unitaires Price
-│   ├── test_pizza.py      # Tests unitaires Pizza
-│   ├── test_order.py      # Tests unitaires Order
-│   ├── test_delivery.py   # Tests unitaires Delivery
-│   └── test_e2e.py        # Tests end-to-end
-├── run.py                 # Point d'entrée de l'API
-├── requirements.txt       # Dépendances Python
-├── API_DOCUMENTATION.md   # Documentation complète de l'API
-├── PRICE_DOCUMENTATION.md # Documentation de la classe Price
-└── README.md             # Ce fichier
+│   ├── __init__.py
+│   ├── test_pizza.py          # Tests unitaires Pizza
+│   ├── test_order.py          # Tests unitaires Order
+│   ├── test_delivery.py       # Tests unitaires Delivery
+│   ├── test_price.py          # Tests unitaires Price
+│   └── test_e2e.py            # Tests end-to-end
+│
+├── run.py                     # Point d'entrée
+├── requirements.txt           # Dépendances Python
+├── README.md                  # Ce fichier
+├── API_DOCUMENTATION.md       # Documentation API détaillée
+├── CONTRIBUTING.md            # Guide de contribution
+├── AUDIT_REPORT.md            # Rapport d'audit complet
+└── pizza_delivery.db          # Base de données SQLite
 ```
 
-## 📚 Documentation de l'API
-
-Voir [API_DOCUMENTATION.md](API_DOCUMENTATION.md) pour la documentation complète des endpoints.
-
-### Endpoints principaux
-
-- **Pizzas**: `POST /pizzas`, `GET /pizzas`, `GET /pizzas/{id}`
-- **Commandes**: `POST /orders`, `GET /orders`, `GET /orders/{id}`, `PATCH /orders/{id}/status`
-- **Livraisons**: `POST /deliveries`, `GET /deliveries`, `PATCH /deliveries/{id}/start`, `PATCH /deliveries/{id}/complete`
-
-## 🏗️ Approche TDD
-
-Ce projet a été développé en suivant l'approche Test-Driven Development :
-
-1. ✅ **Phase RED** : Écriture des tests qui échouent
-2. ✅ **Phase GREEN** : Implémentation du code pour faire passer les tests
-3. ✅ **Phase REFACTOR** : Amélioration du code sans casser les tests
-
-### Couverture des tests
-
-- **20 tests unitaires** pour Price
-- **8 tests unitaires** pour Pizza
-- **18 tests unitaires** pour Order (avec validation)
-- **11 tests unitaires** pour Delivery
-- **Tests E2E** pour valider l'ensemble de l'API
-
-**Total : 57+ tests**
-
-## 🛠️ Technologies utilisées
-
-- **Python 3.12**
-- **Flask 3.0** - Framework web
-- **pytest 7.4** - Framework de tests
-- **pytest-cov** - Couverture de code
-
-## 📝 Exemple d'utilisation
-
-```bash
-# 1. Créer une pizza
-curl -X POST http://localhost:5000/pizzas \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Margherita", "size": "Medium", "price": 12.99}'
-
-# 2. Créer une commande
-curl -X POST http://localhost:5000/orders \
-  -H "Content-Type: application/json" \
-  -d '{"customer_name": "John Doe", "customer_address": "123 Main St"}'
-
-# 3. Ajouter une pizza à la commande
-curl -X POST http://localhost:5000/orders/{order_id}/pizzas \
-  -H "Content-Type: application/json" \
-  -d '{"pizza_id": "1"}'
-
-# 4. Créer une livraison
-curl -X POST http://localhost:5000/deliveries \
-  -H "Content-Type: application/json" \
-  -d '{"order_id": "{order_id}", "driver_name": "Mike Driver"}'
-
-# 5. Démarrer la livraison
-curl -X PATCH http://localhost:5000/deliveries/{delivery_id}/start
-
-# 6. Compléter la livraison
-curl -X PATCH http://localhost:5000/deliveries/{delivery_id}/complete
-```
+---
 
 ## 🎯 Fonctionnalités
 

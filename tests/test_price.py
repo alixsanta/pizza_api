@@ -119,10 +119,12 @@ class TestPrice:
     
     def test_price_round(self):
         """Test l'arrondi d'un prix"""
-        price = Price(amount=12.995, currency="EUR")
-        
-        rounded = price.round(2)
-        
+        # Note: Price constructor already rounds to 2 decimals
+        # So we need to test rounding from 2 to 0 or 1 decimal
+        price = Price(amount=12.99, currency="EUR")
+
+        rounded = price.round(0)
+
         assert rounded.amount == 13.00
     
     def test_price_apply_discount(self):
