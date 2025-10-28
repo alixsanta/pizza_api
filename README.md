@@ -2,8 +2,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Flask](https://img.shields.io/badge/Flask-2.3+-green.svg)](https://flask.palletsprojects.com/)
-[![Tests](https://img.shields.io/badge/Tests-65%20passed-success.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25+-brightgreen.svg)](tests/)
 
 **API REST Flask complète pour la gestion de livraison de pizzas**, développée avec l'approche **TDD (Test-Driven Development)**.
 
@@ -11,10 +9,8 @@
 
 - 🍕 **Gestion des pizzas** - Créer, consulter et gérer un menu de pizzas
 - 📦 **Gestion des commandes** - Validation automatique (min 1 pizza)
-- 🚗 **Suivi de livraison** - Tracking GPS en temps réel
-- 💰 **Support multi-devises** - EUR, USD, GBP, CAD
+- 🚗 **Suivi de livraison** - Tracking en temps réel
 - 🎨 **Interface web moderne** - Design avec animations fluides
-- 🧪 **Tests complets** - 65 tests (unitaires + E2E)
 
 ---
 
@@ -32,9 +28,6 @@ venv\Scripts\activate
 # 3. Installer les dépendances
 pip install -r requirements.txt
 ```
-
-# 4. Initialiser le catalogue de pizzas
-python seed_pizzas.py
 
 ### Lancer l'Application
 
@@ -97,9 +90,8 @@ Réponse attendue:
 
 ---
 
-## 📡 API Endpoints (17 endpoints)
 ## 📡 API Endpoints (19 endpoints)
-### 🍕 Pizzas
+
 ### 🍕 Pizzas
 | Méthode | Endpoint | Description | Statut |
 |---------|----------|-------------|--------|
@@ -111,12 +103,12 @@ Réponse attendue:
 ### 📦 Commandes
 
 | Méthode | Endpoint | Description | Statut |
-|---------|----------|-------------|--------|
+|---------|----------|-------------|-------|
 | `POST` | `/orders` | Créer une commande | ✅ |
 | `GET` | `/orders` | Lister les commandes | ✅ |
 | `GET` | `/orders/<id>` | Récupérer une commande | ✅ |
 | `POST` | `/orders/<id>/pizzas` | Ajouter une pizza | ✅ |
-| `POST` | `/orders/<id>/pizzas` | Ajouter une pizza (par pizza_id) | ✅ MODIFIED |
+| `POST` | `/orders/<id>/pizzas` | Ajouter une pizza (par pizza_id) | ✅ |
 | `PATCH` | `/orders/<id>/status` | Changer le statut | ✅ |
 
 ### 🚗 Livraisons
@@ -155,21 +147,8 @@ pytest --cov=app tests/
 pytest -v
 
 # Tests spécifiques
-pytest tests/test_pizza.py -v
 pytest tests/test_e2e.py -v
 ```
-
-### Statistiques des Tests
-
-| Module | Tests | Couverture | Statut |
-|--------|-------|------------|--------|
-| `test_price.py` | 20 | 100% | ✅ |
-| `test_pizza.py` | 7 | 100% | ✅ |
-| `test_order.py` | 15 | 100% | ✅ |
-| `test_delivery.py` | 11 | 100% | ✅ |
-| `test_e2e.py` | 14 | 100% | ✅ |
-| **TOTAL** | **67** | **85%+** | **✅** |
-
 ---
 
 ## 📂 Structure du Projet
